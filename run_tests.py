@@ -16,6 +16,11 @@ logging.basicConfig(
 
 
 def run_test_with_data(test_data):
+    """
+    Запуск теста с даннными в формате test*.json
+    :param test_data:
+    :return: True если тест пройден успешно, иначе False
+    """
     fsm = FSM(
         {aut["name"]: aut for aut in test_data["automates"]}, test_data["start_states"]
     )
@@ -28,6 +33,11 @@ def run_test_with_data(test_data):
 
 
 def run_tests_from_path(tests_path):
+    """
+    Поиск и запуск всех тестов из директории tests_path
+    :param tests_path:
+    :return:
+    """
     for item in os.listdir(tests_path):
         if os.path.splitext(item)[1] == ".json":
             test_path = os.path.join(tests_path, item)
@@ -41,6 +51,13 @@ def run_tests_from_path(tests_path):
 
 
 def get_generation_time(test_data, iterations_count=25, parallel_factor=1):
+    """
+    Возвращает время генерации на заданном автомате iterations_count членов выходной последовательности
+    :param test_data: задание клеточных автоматов
+    :param iterations_count: число итераций
+    :param parallel_factor: число потоков
+    :return:
+    """
     fsm = FSM(
         {aut["name"]: aut for aut in test_data["automates"]},
         test_data["start_states"],
@@ -57,6 +74,11 @@ def get_generation_time(test_data, iterations_count=25, parallel_factor=1):
 
 
 def run_speed_check_tests():
+    """
+    Запуск тестов на проверку скорости обработки в зависимости от количества потоков (задействованных процессов)
+    Нужно уметь сочеть с количеством реальных и виртуальных ядер на тачке запуска
+    :return:
+    """
     start_time = time.time()
     graph_count = 1000
     graph_nodes = 100

@@ -1,11 +1,15 @@
-import copy
 import multiprocessing as mp
 from collections import namedtuple
 
+import copy
 from typing import Generator, KeysView
 
 
 class Task(namedtuple("Task", ["graph_id", "node_id", "result"])):
+    """
+    Единица распараллеливания в задаче
+    """
+
     def run(self, graph: KeysView):
         neighbours, function_str, value = graph[self.node_id]
         f = eval(function_str)
@@ -18,7 +22,17 @@ class Task(namedtuple("Task", ["graph_id", "node_id", "result"])):
 
 
 class FSM:
+    """
+    Здесь происходит вычисление состояний клеточного автомата
+    """
+
     def __init__(self, automates, start_states, parallel_factor=mp.cpu_count()):
+        """
+        Инициализация состояний входных клеточных автоматов
+        :param automates: клеточный автомат, в формате указанном в test1.json
+        :param start_states: начальные состояния
+        :param parallel_factor: число потоков для запуска расчетов
+        """
         self._FSMs = automates
         self.parallel_factor = parallel_factor
 
@@ -27,11 +41,20 @@ class FSM:
                 node.append(auto_start_state)
 
     def _gen_tasks(self) -> Generator:
+        """
+        Генерация заданий для подсчета
+        :return:
+        """
         for name, fsm in self._FSMs.items():
             for node_id in fsm["graph"]:
                 yield (Task(name, node_id, None), fsm["graph"])
 
     def next_stage(self, inplace=True):
+        """
+        Переводит состояние клеточного автомата/автоматов из момента времени t(n) в момент времени t(n + 1)
+        :param inplace:
+        :return:
+        """
         ng = self if inplace else copy.deepcopy(self)
 
         tasks = ng._gen_tasks()
@@ -44,6 +67,11 @@ class FSM:
         return ng
 
     def _value(self, graph_id: str):
+        """
+        Подсчет n-тых членов выходных последовательностей заданных клеточных автоматов
+        :param graph_id:
+        :return:
+        """
         graph = self._FSMs[graph_id]
         result = graph["result"]
         return eval(result["function"])(
@@ -51,4 +79,7 @@ class FSM:
         )
 
     def value(self):
+        """
+        :return: сумма выходных последовательностей заданных клеточных автоматов
+        """
         return sum([self._value(gid) for gid in self._FSMs])
